@@ -1,0 +1,26 @@
+Describe the goal of the project.
+Investigating the player characteristic with the highest impact on the probability of a higher ranked player winning a tournament.
+
+Describe the data set used in the project. What are the observations in the data? What is the source of the data? How were the data originally collected?
+The dataset used was from 2023, and collected by the Women's Tennis Association from the International Tennis Federation. The observations (each describe 1 match) include player attributes (player heights, player ages, player handedness), set scores, and floor surface type. The outcome variable is the outcome of the match (a bit unclear which variable that is).
+
+Consider the exploratory data analysis (EDA). Describe one aspect of the EDA that is effective in helping you understand the data. Provide constructive feedback on how the team might improve the EDA.
+Displaying a table of key variables in the dataset is incredibly helpful, namely the brief descriptions. A few ideas for improvements
+
+Description for minutes is still marked as response variable.
+If numeric, specify discrete or continuous. Could help explain why you chose the visuals you did for univariate EDA.
+A bit confused about the "winner__ / loser___" formats. Are they stored as decimals? Subtraction was done from first to second in next visual. Could be a bit confusing. Recommend including a snippet of unprocessed data.
+Describe the statistical methods, analysis approach, and discussion of model assumptions, diagnostics, model fit.
+The team performed an exhaustive model search among subset of all predictors excluding interactions. AIC was computed to evaluate goodness of fit. AUC was computed to assess predictive power. AIC values varied only by ~9 points across all models, which is too small a spread to meaningfully differentiate the models. Selection was then based on AUC alone.
+AUC is very low so important predictors are missing or the relationships are much more complex than the model captures.
+
+Since the response variable is expwin which is binary (1 = expected winner won, 0 = underdog won), logistic regression was used. The linearity assumption is reasonable since limited range and distribution of continuous predictor, age_diff. The matches are not all independent. Residuals did not reveal any meaningful patterns, so the relationship was not successfully found.
+
+Model has limited predicted power with AIC = 811.35 and AUC 0.545, a minimal improvement from random guess. No predictor is statistically significant, and odds ratios were all close to 1. The team believes that professional tennis are driven by more complex and dynamic factors uncaptured by available data.
+Looking at the analysis, I think the initial approach of using a weighted AIC/AUC score was creative. However, the realization that AIC provided little discriminatory power was a key insight. Relying on AUC was a better choice. A more straightforward and statistically conventional approach would have been to use Likelihood Ratio Tests (LRTs) based on a significance criterion like AIC or BIC. Using this would provide a more standardized justification for the final model. I also wanted to note that the treatment of handed_diff and round as categorical variables is correct. However, age_diff and height_diff were treated as linear, continuous predictors. It might be more meaningful to explore if there are non-linear relationships (explored this in class presentations like “does a very large age difference matter more than a small one?”) or to categorize these differences (e.g., "Younger vs. Older," "Taller vs. Shorter") to see if the effects are more pronounced. I see the report mentions missing values for height, a key variable. The team should explicitly state how these missing values were handled. Were those matches removed?
+
+I think the most effective part is your honesty and clear-eyed interpretation of their null results. You correctly state that the model has "limited predictive power" and that the effects are "negligible in practical terms." Some areas to improve on are to clarify the "Expected Winner" more because even while defined, the concept of the "expected winner" (based solely on ranking) is the core of the project. The conclusion also correctly points to "dynamic factors" as the real drivers. The report would be strengthened by speculating on what some of those might be (ex. specific playing styles matchups, injuries) and maybe suggesting them for future research.
+
+The aspect I find most interesting is the tension between intuition and data. We believe physical attributes like height (affecting serve power and reach) and handedness (creating unusual matchups for opponents) should matter. The data, however, robustly shows that in the context of the professional WTA tour in 2023, these factors are undermined by other factors when controlling for ranking.
+
+The biggest organizational issue when I looked at it is the jump from the original dataset of 34,323 observations to the final modeling dataset of 605 rows. The report does not document the filtering process. What criteria were used to remove over 33,000 matches? Was it due to missing data? Was it a focus on only specific tournament levels?

@@ -1,0 +1,39 @@
+Peer review- Project Most Squares
+
+Describe the goal of the project.
+
+The goal of the project is to understand which factors make it more likely that the higher-ranked player wins a women’s tennis match. The team focuses on things like surface type, player age, height, and handedness to see which characteristics actually influence outcomes.
+
+Describe the data set used in the project. What are the observations in the data? What is the source of the data? How was the data originally collected?
+The project uses 2023 women’s tennis match data from the WTA, originally collected by official tennis organizations and shared through a public GitHub repository. Each observation represents a single match, and the dataset includes around 34,000 matches and 49 variables. The key variables center on player rankings, age, height, handedness, and court surface.
+Consider the exploratory data analysis (EDA). Describe one aspect of the EDA that is effective in helping you understand the data. Provide constructive feedback on how the team might improve the EDA.
+
+I love the binary variable expected winner vs. unexpected winner, and how you examined the data from that perspective. Could consider comparing a full fit logistic regression model and various reduced models with one dropped predictor, to see which predictors are more relevant than others.
+
+The choice of EDA is great, maybe for formatting purposes keeping a consistent color scale and binwidth could make the plots easier to interpret. Overall looks great!
+
+Describe the statistical methods, analysis approach, and discussion of model assumptions, diagnostics, model fit.
+
+A statistical method that is used is logistic regression, that systematically compares multiple models using AIC and AUC. Model assumptions are checked by examining VIF values and acknowledging potential dependence issues due to repeat player matchups. It is noted that the final model performs only slightly better than chance (AUC ≈ 0.55), and clearly discussed that their model has practical limitations.
+
+Provide constructive feedback on how the team might improve their analysis. Make sure your feedback includes at least one comment on the statistical modeling aspect of the project, but also feel free to comment on aspects beyond the modeling.
+
+Your analysis is well-structured, and the modeling workflow shows real effort, but a few adjustments could make it much stronger. The biggest gap is that the model doesn’t use ranking information, even though the whole project centers on understanding what influences whether the better-ranked player wins. Including a rank-difference variable would let you evaluate how much age, height, handedness, and surface matter on top of ranking itself. Your model-selection process, combining standardized AIC and AUC, could also benefit from a bit more explanation so readers understand why those metrics were weighted equally and why you ultimately leaned on AUC alone. Since the data has a big imbalance between expected and unexpected winners (shown in your EDA on page 4), comparing your model to a simple baseline classifier would help clarify whether an AUC around 0.545 is meaningfully better than chance. Finally, while you note computational limits for interactions, testing just a few plausible ones (like surface × age) could reveal relationships your main model may have missed.
+In the non-modeling parts of the analysis, the EDA would feel more connected to the modeling results if you explicitly pointed out how the heavy overlap in height and age distributions lines up with the weak effects you ultimately observe in the model. You also mention missing values but don’t discuss how you handled them or whether they might affect the analysis, especially given the large amount of missing height data. Adding a brief explanation there would help strengthen the overall analytical transparency.
+
+Provide constructive feedback on the interpretations and initial conclusion. What is most effective in the presentation of the results? What additional detail can the team provide to make the results and conclusions easier for the reader to understand?
+
+Your interpretation section does a nice job translating the logistic regression coefficients into practical terms, and you clearly communicate that the estimated effects are extremely small and not statistically significant. The main conclusion, that simple physical and demographic traits don’t meaningfully predict match outcomes, is consistent with the patterns you showed earlier and is one of the strongest, most coherent parts of the report.
+To make the conclusions even more effective, you might connect them more directly to tennis context. For example, the round variable has the largest estimated effect in your model, even if nonsignificant, and offering a short explanation of why earlier or later rounds might behave differently would enrich the interpretation. You could also briefly expand the limitations section to acknowledge factors like missing height values, repeated matchups, and the absence of in-match performance metrics, all of which likely play a bigger role in determining outcomes than the variables you studied. Ending with a small note about potential next steps, such as incorporating serve percentages or player-level effects, would give the conclusion a stronger finish and help situate your findings in a broader analytical perspective.
+
+What aspect of this project are you most interested in and think would be interesting to highlight in the written report?
+
+An aspect of the project that we’re most interested in was how you defined “expected vs. unexpected winners” and used that to explore what actually makes upsets happen. It’s a really cool angle because it connects directly to how people talk about sports in real life. I think it would be interesting to highlight this more in the report, especially how the predictors you chose (age, height, handedness, surface, etc.) didn’t actually separate the two groups that much. That contrast makes the results more memorable.
+
+Provide constructive feedback on any issues with file and/or code organization.
+
+The code is organized overall. There are clear sections, logical labeling, and consistent formatting. One small thing that could make it even smoother is adding a tiny bit more explanation in a couple places, just so readers understand why each step is being done (for example, why you choose those specific variables when cleaning the dataset, or why interactions were intentionally left out). But in terms of layout and workflow, it looks good.
+
+(Optional) Any further comments or feedback?
+
+Nice work overall!

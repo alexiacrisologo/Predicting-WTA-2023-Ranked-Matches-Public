@@ -1,0 +1,326 @@
+---
+title: "tryingagain"
+format: html
+---
+
+## Introduction:
+
+Tennis has stood the test of time and has become one of the most popular sports in the world. By combining athletic skill, endurance, and strategy, each match is different and offers a complex interaction between the physical and environmental factors. Players train to leverage their physical attributes and skills to win across a variety of playing surfaces and match lengths.
+
+We wanted to understand the driving forces behind match outcomes better. Doing this for every tennis match ever, however, would be too challenging and not relevant to the modern game. To minimize potential difficulties arising from multiple players on the same team, we selected only women's singles matches. Additionally, we limited our data to matches in 2023 for up-to-dateness and availability reasons. Thus, we posed the question: given surface type, player heights, player ages, and player handedness, which characteristic has the most significant impact on the probability that the better-ranked player will win?
+
+This project will analyze match-level data from the Women's Tennis Association (WTA) for the 2023 season. Each observation represents 1 match, which includes player attributes, set scores, and surface type. By modeling the relationship between our factors and match results, our study identifies which variables most strongly influence the winner of a tennis match.
+
+Our motivation for this research stems from an interest in using sports analytics to better understand and predict performance outcomes. With events such as the 2025 Cincinnati Open, which ends in August 2025 and is becoming increasingly popular, predicting a winner can be a fun and engaging exercise. Additionally, for sports bettors, being able to predict a winner purely based on available data before a match could prove very profitable on sites such as Kalshi, which is growing in popularity.
+
+## Data Description:
+
+The data we chose was the Women's Tennis Association data set from Awesomedata's GitHub repository (https://github.com/JeffSackmann/tennis_wta/blob/master/wta_matches_qual_itf_2023.csv). The data was created in 2023 and was collected from the International Tennis Federation. The data contains 34,323 observations and 49 variables. The variables of interest in our research include surface, winner and loser height, winner and loser age, and winner and loser hand.
+
+**Table 1. Key Variables in the Tennis Dataset**
+
+| Variable | Description | Type |
+|------------------------|------------------------------|------------------|
+| `minutes` | Duration of the match in minutes (response variable) | Numeric |
+| `surface` | Type of court surface (Clay, Hard, Grass, etc.) | Categorical |
+| `winner_hand / loser_hand` | Handedness of the winner/loser (R, L, or U for unknown) | Categorical |
+| `winner_age / loser_age` | Age of the winner/loser (in years) | Numeric |
+| `winner_ht / loser_ht` | Height of the winner/loser (in centimeters) | Numeric |
+| `winner_rank / loser_rank` | World ranking of the winner/loser at the time of the match | Numeric |
+| `winner_rank_points / loser_rank_points` | Ranking points of the winner/loser | Numeric |
+| `tourney_name` | Name of the tournament | Categorical |
+| `tourney_level` | Tournament level (e.g., ITF, WTA 125, WTA 250) | Categorical |
+| `tourney_date` | Starting date of the tournament | Date |
+| `winner_seed / loser_seed` | Tournament seeding for the players (if applicable) | Numeric |
+| `score` | Final match score (set-by-set) | Character |
+| `round` | Stage of the tournament (Qualifying, stage of bracket format) | Numeric |
+
+**Summary of the Data**: Most tournaments were played on hard or clay surfaces, with draw sizes typically of 32 players. The average winner age was 23.1 years (range: 14–51), while the average loser age was 22.9 years. Player heights were generally around 172 cm for winners and 171.8 cm for losers, though many values were missing. Right-handed players made up the majority of both winners and losers, while left-handed and unknown cases were less common. There are missing values in several variables, particularly for winner_ht, loser_ht, and match-level statistics such as aces and double faults. However, the "expected winner" variable is not explicitly defined (yet), and each row still represents 1 match rather than one player.
+
+First, differences in values between ranking, age, and height were taken, with the winner-loser. Then, the response variable was formulated: expwin = 1 when the winner was expected to win (i.e., had a lower ranking), and expwin = 0 when the winner was an underdog. Another conditional variable was then created based on handedness. If the handedness of the winner and loser were the same, then the variable handed_diff would be evaluated to 0. Finally, the round variables were re-leveled into "Qualifier" (for matches in the Qualification stage), "Outer" (for matches in the bracket stage before the semifinals), and "Finals" (for matches in the semifinals and finals). The first few rows are glimpsed below.
+
+```{r}
+#| label: data-description
+#| message: false
+#| warning: false
+#| echo: false
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(broom)
+library(purrr)
+library(pROC)
+library(rms)
+library(broom)
+library(yardstick)
+library(patchwork)
+
+tennis <- read.csv("data/wta_matches_qual_itf_2023 (1).csv")
+```
+
+```{r}
+#| label: variable-manipulation
+#| message: false
+#| warning: false
+#| echo: false
+tennis_clean <- tennis %>%
+  select(minutes, surface, winner_age, winner_ht, winner_hand,
+         loser_age, loser_ht, loser_hand) %>%
+  drop_na(minutes, surface, winner_age, loser_age) %>%
+  mutate(
+    surface = as.factor(surface),
+    winner_hand = as.factor(winner_hand),
+    loser_hand = as.factor(loser_hand)
+  )
+
+new_tennis_clean <- tennis |>
+  mutate(age_diff = winner_age - loser_age) |>
+  mutate(height_diff = winner_ht - loser_ht) |>
+  mutate(ranking_diff = winner_rank - loser_rank) |>
+  mutate(handed_diff = ifelse(winner_hand == loser_hand, 0, 1)) |>
+  select(minutes, surface, winner_age, winner_ht, winner_hand,
+         loser_age, loser_ht, loser_hand, ranking_diff, height_diff, age_diff, 
+         winner_rank, loser_rank, handed_diff, round) |>
+  drop_na() |>
+  mutate(
+    surface = as.factor(surface),
+    winner_hand = as.factor(winner_hand),
+    loser_hand = as.factor(loser_hand)) |>
+  mutate(round = as.factor(round)) |>
+  mutate(expwin = ifelse(ranking_diff > 0, 0, 1)) |> # 0 = unexpected
+  select(expwin, height_diff, age_diff, handed_diff, surface, round) |>
+  mutate(round = case_when(
+      round %in% c("Q1", "Q2", "Q3") ~ "Qualifiers",
+      round %in% c("R16", "R32", "QF") ~ "Outer",
+      round %in% c("SF", "F") ~ "Finals"
+    )) |>
+  mutate(handed_diff = factor(handed_diff))
+
+glimpse(new_tennis_clean)
+```
+
+Based on the exploratory data analysis, we observe that the dataset contains a notably larger number of expected winners than unexpected winners. This aligns with intuition: higher-ranked players tend to win more often in professional tennis. However, when we examine the distributions of the predictors relative to the response variable, no clear or substantial differences emerge between groups. The boxplots for age and height differences show largely overlapping distributions for expected and unexpected winners, suggesting that neither variable systematically favors one outcome over the other. Similarly, the proportional bar plots for handedness, surface type, and tournament round reveal no meaningful shifts in category frequencies that correlate with match outcome.
+
+Overall, the EDA does not provide visual evidence of strong associations between our predictors and the likelihood of an expected versus an unexpected winner. The patterns across plots appear uniform, with no noticeable trends or separations that suggest predictive value. This initial assessment implies that the variables included, while relevant from a tennis-specific or physiological standpoint, may not meaningfully differentiate match outcomes within this dataset. Univariate EDA shown below:
+
+```{r}
+#| label: eda
+#| message: false
+#| warning: false
+#| echo: false
+
+small_counts <- new_tennis_clean |>
+  count(expwin)
+
+cate_tennis_clean <- new_tennis_clean |>
+  mutate(expwincat = if_else(expwin == 1, "Expected", "Unexpected")) |>
+  mutate(handedcat = if_else(handed_diff == 0, "Opposite", "Same"))
+
+p_exp <- ggplot(cate_tennis_clean, aes(x = expwincat, fill = expwincat)) +
+  geom_bar() +
+  labs(
+    title = "Counts of Expected or Unexpected Winners",
+    x = "Expected or Unexpected Winners",
+    y = "Counts"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none") 
+
+p_ht <- ggplot(cate_tennis_clean, aes(x = expwincat, y = height_diff, fill = expwincat)) +
+  geom_boxplot() +
+  labs(
+    title = "Height Distribution", 
+    x = "Outcome", 
+    y = "Height") +
+  theme_bw() +
+  theme(legend.position = "none") 
+
+p_age <- ggplot(cate_tennis_clean, aes(x = expwincat, y = age_diff, fill = expwincat)) +
+  geom_boxplot() +
+  labs(
+    title = "Age Distribution", 
+    x = "Outcome", 
+    y = "Age") +
+  theme_bw() +
+  theme(legend.position = "none") 
+
+p_hand <- ggplot(cate_tennis_clean, aes(x = expwincat, fill = handedcat)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Distribution of Handedness", 
+    x = "Outcome", 
+    y = "Proportion",
+    fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+p_surface <- ggplot(cate_tennis_clean, aes(x = expwincat, fill = surface)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Distribution of Surface", 
+    x = "Outcome", 
+    y = "Proportion",
+    fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+p_round <- ggplot(cate_tennis_clean, aes(x = expwincat, fill = round)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Distribution of Tennis Round", 
+    x = "Outcome", 
+    y = "Proportion",
+    fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+cowplot::plot_grid(p_exp, p_ht, p_age, p_hand, p_surface, p_round, nrow = 2, align = "v", rel_widths = c(1.5, 1.5))
+
+```
+
+Examining the bivariate relationships among our predictors, we observe broadly similar patterns across variables. Age differences and height differences appear randomly distributed, with no clear directional trends or clustering. The distributions of handedness relative to both age and height differences also show no meaningful separation, suggesting minimal association among these characteristics. Overall, the variables seem largely independent of one another. While there is a slight indication that rank may increase with age, this relationship is modest and will be further evaluated using VIF diagnostics later in the analysis. Bivariate EDA shown below:
+
+```{r}
+#| label: bivariate-eda
+#| message: false
+#| warning: false
+#| echo: false
+
+p_age_height <- ggplot(cate_tennis_clean, aes(x = age_diff, y = height_diff, color = expwincat)) +
+  geom_point() +
+  labs(
+    x = "Age Difference",
+    y = "Height Difference",
+    title = "Age vs Height",
+    fill = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+p_handed_age <- ggplot(cate_tennis_clean, aes(x = handed_diff, y = age_diff, color = expwincat)) +
+  geom_boxplot() +
+  labs(
+    x = "Handedness",
+    y = "Age",
+    title = "Handedness vs Age Difference",
+    fill = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+p_handed_height <- ggplot(cate_tennis_clean, aes(x = handed_diff, y = height_diff, color = expwincat)) +
+  geom_boxplot() +
+  labs(
+    x = "Handedness",
+    y = "Height",
+    title = "Handedness vs Height Difference",
+    fill = NULL
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+p_age_height + p_handed_age + p_handed_height
+
+```
+
+## Methodology
+
+Following the EDA, it remained unclear which predictors should constitute an “optimal” model, as all appeared theoretically relevant. To address this, we implemented a workflow that fit all possible models excluding interactions; interactions were omitted due to computational constraints, as including all second-order interactions among six predictors would require 63 additional models.
+
+For each model, we computed AIC and AUC, standardized both metrics using $\frac{(max(AIC) - AIC)}{(max(AIC) - min(AIC)}$ and $\frac{(AUC - min(AUC))}{(max(AIC) - min(AIC)}$.and combined them with equal weighting to give a balanced selection criterion. This procedure initially identified `expwin` \~ round as the best model.
+
+However, the AIC values varied by only 9.156463 across all models—an insignificantly small range given overall values near 800—indicating that AIC offered little discriminatory power. Consequently, we prioritized AUC alone, which yielded a more informative model: `expwin` \~ `age_diff` + `handed_diff` + `round`.
+
+```{r}
+#| label: function
+#| message: false
+#| warning: false
+#| echo: false
+vars <- setdiff(names(new_tennis_clean), "expwin")
+
+fits  <- function(predictors, data){
+  predictor_string <- paste(predictors, collapse = " + ")
+  formula <- as.formula(paste("expwin ~ ", predictor_string))
+  fit <- glm(formula, data = data, family = "binomial")
+  aic_value = as.numeric(AIC(fit))
+  preds_prob = predict(fit, newdata = data, type = "response")
+  roc_model = roc(data$expwin, preds_prob)
+  auc = as.numeric(auc(roc_model))
+  tibble(predictors = predictor_string, AIC = aic_value, AUC = auc)
+}
+```
+
+```{r}
+#| label: lapply-application
+#| message: FALSE
+#| warning: false
+#| echo: false
+
+all_combos <- unlist(
+  lapply(1:length(vars), function(k) {
+    combn(vars, k, simplify = FALSE)
+  }), recursive = FALSE
+)
+
+results_df <- map_df(all_combos, ~ fits(.x, new_tennis_clean))
+
+results <- as.data.frame(results_df)
+```
+
+```{r}
+#| label: results-analysis
+#| message: false
+#| warning: false
+#| echo: false
+
+results <- results |> 
+  mutate(standardized_AIC = (max(AIC) - AIC) / (max(AIC) - min(AIC))) |>
+  mutate(standardized_AUC = (AUC - min(AUC)) / (max(AUC) - min(AUC))) |>
+  mutate(combined = 0.5 * standardized_AIC + (0.5) * standardized_AUC)
+
+balanced_model <- results |>
+  filter(combined == max(combined)) |>
+  pull(predictors)
+
+#max(results$AIC) - min(results$AIC)
+
+optimal_model <- results |>
+  filter(AUC == max(AUC)) |>
+  pull(predictors)
+
+optimal_model_eval <- results |>
+  filter(AUC == max(AUC)) |>
+  select(AIC, AUC)
+
+optimal_model_eval
+
+formula_optimal <- as.formula(paste("expwin ~", optimal_model))
+optimal <- glm(formula_optimal, data = new_tennis_clean)
+tidy(optimal)
+vif(optimal)
+
+
+```
+
+## Results
+
+```{r}
+#| label: results
+#| message: false
+#| echo: false
+#| warning: false
+
+
+tidy(optimal)
+optimal_model_eval
+vif(optimal)
+
+```
+
+Our final model yielded an AIC of 811.35 and an AUC of 0.545, indicating predictive performance only marginally better than chance. The AIC was similar to those of alternative model specifications, and all VIF values were below 5, suggesting that multicollinearity among predictors is not a concern. While we treated each match as independent and identically distributed, we acknowledge that some players faced each other multiple times; removing repeated matchups would have introduced additional selection issues, so all matches were retained.
+
+Interpreting the model using exponentiated coefficients, we find that the effects of the included predictors are negligible in practical terms. Specifically, a one-year increase in age difference raises the expected winner’s odds of winning by only 0.0096%, and differences in handedness increase odds by approximately 3.6%. Early-round matches (roundOuter) increase odds by roughly 17%, and qualifying-round matches (roundQualify) increase odds by about 11%. However, none of these effects reach conventional statistical significance (alpha = 0.05), indicating that we cannot conclude that these factors meaningfully influence the probability that the expected winner prevails.
+
+Overall, the model provides limited predictive power, with an AUC only slightly above 0.5, suggesting that static player attributes such as age, height, handedness, and surface type contribute very little to determining match outcomes. Instead, performance likely depends more on dynamic factors that are not captured in the dataset, such as player skill, strategy, fitness, in-match decision-making, and psychological factors. These results highlight the complexity of professional tennis, where observable demographic or physical characteristics alone are insufficient to predict match outcomes reliably.

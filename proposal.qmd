@@ -1,0 +1,193 @@
+---
+title: "Proposal"
+author: "join_ssmu: Alexia Crisologo, Michael Erenbaum, Cooper Ruffing"
+format: pdf
+---
+
+```{r}
+#| label: univariate-data-analysis
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(dplyr)
+
+tennis <- read.csv("data/wta_matches_qual_itf_2023 (1).csv")
+
+ggplot(tennis, aes(x = minutes)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(
+    x = "Duration of Match in Minutes",
+    title = "Distribution of Duration of Match in Minutes"
+  )
+
+
+#response
+ggplot(tennis, aes(x = winner_hand)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    x = "Hand",
+    y = "Count",
+    title = "Distribution of Handedness of Match Winners"
+  ) +
+  theme_minimal()
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: univariate-data-analysis-2
+#| message: false
+#| warning: false
+
+#first covariate
+ggplot(tennis, aes(x = loser_hand)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    x = "Hand",
+    y = "Count",
+    title = "Distribution of Handedness of Match Losers"
+  ) +
+  theme_minimal()
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: univariate-data-analysis-3
+#| message: false
+#| warning: false
+
+#second covariate
+ggplot(tennis, aes(x = winner_age)) +
+  geom_histogram(fill = "skyblue") +
+  labs(
+    x = "Hand",
+    y = "Count",
+    title = "Distribution of Age of Match Winners"
+  ) +
+  theme_minimal()
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: univariate-data-analysis-4
+#| message: false
+#| warning: false
+
+ggplot(tennis, aes(x = winner_ht)) +
+  geom_histogram(fill = "skyblue") +
+  labs(
+    x = "Hand",
+    y = "Count",
+    title = "Distribution of Height of Match Winners"
+  ) +
+  theme_minimal()
+```
+
+{{< pagebreak >}}
+
+
+```{r}
+#| label: bivrariate-data-analysis
+#| message: false
+#| warning: false
+
+library(ggplot2)
+
+
+p2 <- ggplot(tennis, aes(x = winner_age, y = minutes)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Winner Age", y = "Match Duration (min)",
+       title = "Winner Age vs. Match Duration", 
+       subtitle = "Positive relationship between winner age and match duration") +
+  theme_minimal() 
+
+p1 <- ggplot(tennis, aes(x = loser_age, y = minutes)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Loser Age", y = "Match Duration (min)",
+       title = "Loser Age vs. Match Duration", 
+       subtitle = "Negative relationship between loser age and match duration") +
+  theme_minimal()
+
+cowplot::plot_grid(p1, p2, ncol = 1, align = "v", rel_heights = c(1.5, 1.5))
+
+p3 <- ggplot(tennis, aes(x = winner_ht, y = minutes)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Winner Height (cm)", y = "Match Duration (min)",
+       title = "Winner Height vs. Match Duration",
+       subtitle = "Positive relationship between winner height and match duration") +
+  theme_minimal()
+
+p4 <- ggplot(tennis, aes(x = loser_ht, y = minutes)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Loser Height (cm)", y = "Match Duration (min)",
+       title = "Loser Height vs. Match Duration",
+       subtitle = "Positive relationship between loser height and match duration") +
+  theme_minimal()
+
+cowplot::plot_grid(p3, p4, ncol = 1, align = "v", rel_heights = c(1.5, 1.5))
+```
+
+{{< pagebreak >}}
+
+
+```{r}
+#| label: bivrariate-data-analysis-2
+#| message: false
+#| warning: false
+
+p5 <- ggplot(tennis, aes(x = winner_hand, y = minutes)) +
+  geom_boxplot() +
+  labs(x = "Winner Playing Hand", y = "Match Duration (min)",
+       title = "Winner's Hand vs. Match Duration", 
+       subtitle = "Right-handed winners: highest avg match duration") +
+  theme_minimal()
+
+p6 <- ggplot(tennis, aes(x = loser_hand, y = minutes)) +
+  geom_boxplot() +
+  labs(x = "Loser Playing Hand", y = "Match Duration (min)",
+       title = "Loser's Hand vs. Match Duration", 
+       subtitle = "Right-handed losers: highest avg match duration") +
+  theme_minimal()
+
+cowplot::plot_grid(p5, p6, ncol = 1, align = "v", rel_heights = c(1.5, 1.5))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: bivrariate-data-analysis-3
+#| message: false
+#| warning: false
+
+ggplot(data = tennis, aes(x = surface, y = minutes)) +
+  geom_boxplot() +
+  labs(title = "Match Duration by Court Surface",
+       subtitle = "Clay has the highest average match duration in minutes",
+       x = "Surface",
+       y = "Match Duration (min)")
+```
+
+
+
+### 1) Statement of the research question
+Using the court type, age, height, and playing hand of the winner and loser of the match, which characteristic has the most significant impact on the duration of a woman's single tennis match in 2023?
+
+### 2) Why the research question is important
+This question is crucial because it helps us understand what drives match length and provides us with valuable insights for both performance and tournament management. By knowing which factors can affect match duration the most, coaches and players can plan their training intensity, endurance strategies, and recovery schedules accordingly to better prepare for their matches. For example, if older players tend to have longer matches, they can adjust their conditioning programs accordingly to accommodate for these longer matches. Additionally, using our research would allow tournament organizers to schedule matches more effectively, as certain surfaces or player characteristics may lead to longer games, which can affect broadcast and rest times. Analysts can also use this information to anticipate match dynamics better. For instance, if taller or left-handed players tend to engage in longer rallies, this helps improve strategy and preparation, allowing opponents to better deal with them. 
+
+### 3) Description of data
+The data we chose was the Women's Tennis Association data set from Awesomedata's GitHub repository (https://github.com/JeffSackmann/tennis_wta/blob/master/wta_matches_qual_itf_2023.csv). The data was created in 2023 and was collected from the International Tennis Federation. The data contains 34,323 observations and 49 variables. Our variables of interest in our research include surface, winner and loser height, winner and loser age, and winner and loser hand. 
+
+### 4) How data will be used to answer research question
+These variables will help us determine which factor has the most significant impact on match duration. There are some NA variables corresponding to the player's height. Since this is our variable of interest, we will drop all NA values corresponding to height, leaving us with 1,256 observations. Additionally, since grand slams are played on either clay, grass, or hard courts, we will drop the matches that were played on carpet, which leaves us with 1,239 observations. 
+
+### 5) Description of your planned analysis
+The outcome variable is match duration (in minutes), a continuous variable. The predictors are court type, winner and loser age, winner and loser height, and winner and loser playing hand. Because the outcome is continuous, a multiple linear regression will be used to analyze the data. This regression will allow us to estimate how each characteristic influences match duration while holding other factors constant. The variable with the largest standardized coefficient (or the strongest statistical significance) will be identified as having the greatest impact on match duration.
+

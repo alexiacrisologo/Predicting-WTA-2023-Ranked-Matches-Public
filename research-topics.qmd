@@ -1,0 +1,73 @@
+---
+title: "Research topics"
+author: "Cooper Ruffing, Alexia Crisologo, Michael Erenbaum"
+format: pdf
+---
+
+## Topic 1
+
+**Description of topic:** The UFC (Ultimate Fighting Championship) is one of the most watched combat sports globally, showcasing fighters from diverse backgrounds competing in different weight classes for championship titles and prize money. The sport combines various fighting disciplines, including wrestling, boxing, Brazilian jiu-jitsu, and Muay Thai, resulting in highly competitive matchups where both strategy and physical attributes play a critical role. Understanding the factors that influence fight outcomes can provide valuable insights for athletes, coaches, and analysts.
+
+**Why we would like to investigate:** UFC fighters are evaluated on a variety of metrics, such as reach, height, weight, age, fighting style, and prior fight performance. Investigating the relationships between these variables and fight outcomes can help identify which attributes are most strongly associated with success. This information could assist fighters and their teams in optimizing training, strategy, and fight preparation. Additionally, analyzing historical trends may uncover patterns that could predict fight outcomes or inform matchmaking decisions.
+
+**Audience:** People interested in the UFC; fighters in the UFC.
+
+**Potential Research Questions**
+
+1) Does a fighter's physical attributes contribute to winning?
+
+2) Do a certain fighter's previous fight results affect the next result?
+
+3) Do certain weight classes have preferential physical attributes for fighters?
+
+**Type of Data Needed:**Analyzing historical fight data requires a comprehensive set of information. This includes detailed fighter attributes (e.g., age, weight, fighting style), fight outcomes (win/loss, method of victory, round of finish), and in-bout statistics (strikes landed, takedowns, submissions). Additionally, tracking fighter records over time reveals career trends, while weight class-specific data allows for division-by-division comparisons. Together, these data points provide a robust foundation for predicting outcomes and evaluating performance.
+
+{{< pagebreak >}}
+
+## Topic 2
+
+**Description of the topic:** This project would investigate factors influencing the duration of women's singles tennis matches. Using match-level data from the Women's Tennis Association (WTA), we would analyze how player characteristics—such as age, height, and dominant playing hand—as well as match surface (clay, grass, hard) affect the length of a match. The analysis would focus on determining which of these variables have the greatest impact on match duration.
+
+**Why we would like to investigate:** Understanding the characteristics that influence match duration can help tennis players, coaches, and analysts better prepare for upcoming matches. The Cinncinati Open just ended over a month ago, and watching it was fun, but knowing more about what data affects matches can be good to know.
+
+**Potential audience(s):**
+
+-Professional and amateur tennis players and their coaches
+
+-Sports analysts and statisticians interested in performance metrics
+
+-Tennis organizations and sports strategists planning tournament schedules
+
+-Data science researchers focusing on sports analytics
+
+**Potential research questions:**
+
+1)How do player characteristics (age, height, playing hand) influence the duration of a women's singles tennis match?
+
+2)Does the type of court surface (clay, grass, hard) significantly impact match duration?
+
+3)Which factor—winner's age, loser's height, or playing hand—is the strongest predictor of match length?
+
+**Type of Data Needed:**WTA match-level data, including player attributes, match results, and surface type with variables like: winner/loser age, height, playing hand, match surface, and match duration, maybe even historical match statistics for trend comparison, player BMI or wingspan for more detailed physical analysis
+
+{{< pagebreak >}}
+
+## Topic 3
+
+**Description of topic:** The NFL (National Football League) is the most watched sport in America, bringing together elite athletes from across the world. With 32 teams competing annually for the coveted Super Bowl trophy, the league represents not only the pinnacle of American football but also one of the most data-rich sports in terms of player evaluation. NFL players undergo extensive testing for physical measurables such as height, weight, hand size, arm length, sprint speed, and explosiveness. These metrics are heavily analyzed by scouts, teams, and analysts during the draft process and throughout a player’s career. Understanding how these measurables influence both positional assignment and player success could provide valuable insights into talent evaluation and team-building strategies.
+
+**Why we would like to investigate:** Football is unique in that it requires a wide variety of physical and athletic attributes depending on the position being played. For example, quarterbacks often benefit from height and arm strength, while cornerbacks and wide receivers rely on speed and agility. Offensive linemen may prioritize size and strength, whereas kickers focus more on accuracy and technique. We are interested in investigating how these measurables correlate with different positions, draft outcomes, and eventual career success.
+
+By identifying strong correlations, we may be able to better understand how teams evaluate talent and predict player performance at the professional level. This type of analysis could be useful for coaches and scouts in refining their recruitment and draft strategies, and for players in training to maximize their performance and align their skillsets with specific positions.
+
+**Audience:** People interested in football; football players
+
+**Potential Research Questions:** 
+
+1) How does a players' measurables determine the position they play? 
+
+2) Do a player's speed and explosiveness affect their draft stock? 
+
+3) How do better measurables determine a players' success at their position?
+
+**Type of Data Needed:** To explore these questions, we would need a comprehensive dataset on NFL players spanning multiple decades to capture long-term trends. Key variables include player measurables (height, weight, hand size, arm length, speed, explosiveness, agility, and strength), official position, draft details (round, pick, team, year), and career outcomes such as games started, years played, performance statistics, and honors. Additional information from Combine and Pro Day results, along with contextual factors like college, draft age, and injury history, would provide a complete picture for analyzing how player attributes influence both draft stock and long-term career success
